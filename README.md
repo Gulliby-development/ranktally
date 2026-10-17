@@ -22,6 +22,8 @@ usage: ranktally tally [--seats N] [--winner-only] METHOD FILE
 
 FILE is a path to an election file or `-` to read standard input. `--help` by itself prints the synopsis; elsewhere it is treated as an unknown command or option. `--seats N` accepts 1 through 11, defaults to 1, and applies only to STV; for STV, N must also be less than the number of candidates. `--winner-only` prints just the tally result, while `--margins` shows signed pairwise margins instead of raw counts.
 
+In an election file, a `#` at the start of a line or after a space or tab begins a comment that runs to the end of the line; this works on the `candidates` line and on ballot lines, and a `#` glued to a name or to a colon is part of the text.
+
 To try the supplied election, save this as lunch.txt. The repository does not ship lunch.txt:
 
 ~~~text

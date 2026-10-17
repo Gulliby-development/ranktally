@@ -15,7 +15,7 @@ export function parseElection(lines: string[]): Election {
     throw new FormatError(0, "no candidates line");
   }
 
-  const candidateTokens = trimSpacesTabs(lines[candidateLine]).split(/[ \t]+/);
+  const candidateTokens = trimSpacesTabs(stripComment(lines[candidateLine])).split(/[ \t]+/);
   if (candidateTokens[0] !== "candidates") {
     throw new FormatError(candidateLine + 1, 'expected a "candidates" line first');
   }
@@ -63,6 +63,7 @@ function parseBallot(
   lineNumber: number,
   candidateIndexes: ReadonlyMap<string, number>,
 ): Ballot {
+  line = stripComment(line);
   const colonIndex = line.indexOf(":");
   let count = 1;
   let ranking = line;
@@ -112,6 +113,20 @@ function parseBallot(
   }
 
   return { count, groups };
+}
+
+function stripComment(line: string): string {
+  for (
+    let hashIndex = line.indexOf("#");
+    hashIndex !== -1;
+    hashIndex = line.indexOf("#", hashIndex + 1)
+  ) {
+    if (hashIndex === 0 || line[hashIndex - 1] === " " || line[hashIndex - 1] === "\t") {
+      return line.slice(0, hashIndex);
+    }
+  }
+
+  return line;
 }
 
 function isIgnored(line: string): boolean {
