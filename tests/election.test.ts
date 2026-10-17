@@ -364,10 +364,10 @@ const ballotErrorCases: Array<{
     message: 'unknown candidate "A:B"',
   },
   {
-    name: "an inline comment is not a comment",
-    lines: ["candidates A B", "A # comment"],
+    name: "a hash glued to a name is not a comment",
+    lines: ["candidates A B", "A#comment"],
     line: 2,
-    message: 'unknown candidate "A?#?comment"',
+    message: 'unknown candidate "A#comment"',
   },
   {
     name: "Unicode whitespace is not trimmed around a ranking name",
