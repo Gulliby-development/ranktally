@@ -222,3 +222,119 @@ test("pairwise converts file read failure to a diagnostic without partial output
   expect(calls.filePaths).toEqual(["votes.txt"]);
   expect(calls.stdinReads).toBe(0);
 });
+
+const LUNCH_PERCENT =
+  "vs     Pizza  Ramen  Sushi  Tacos  Salad\n" +
+  "Pizza      .   36.2   36.2   36.2   53.2\n" +
+  "Ramen   61.7      .   42.6   31.9   42.6\n" +
+  "Sushi   46.8   25.5      .   57.4   42.6\n" +
+  "Tacos   61.7   51.1   25.5      .   57.4\n" +
+  "Salad   29.8   25.5   14.9   25.5      .\n" +
+  "\n" +
+  "condorcet winner: none\n" +
+  "condorcet loser: Salad\n";
+
+const LUNCH_MARGIN_PERCENT =
+  "vs     Pizza  Ramen  Sushi  Tacos  Salad\n" +
+  "Pizza      .  -25.5  -10.6  -25.5   23.4\n" +
+  "Ramen   25.5      .   17.0  -19.1   17.0\n" +
+  "Sushi   10.6  -17.0      .   31.9   27.7\n" +
+  "Tacos   25.5   19.1  -31.9      .   31.9\n" +
+  "Salad  -23.4  -17.0  -27.7  -31.9      .\n" +
+  "\n" +
+  "condorcet winner: none\n" +
+  "condorcet loser: Salad\n";
+
+test("pairwise --percent prints the lunch counts as percentages of 47 ballots", () => {
+  const { io, calls } = fakeIo(LUNCH);
+
+  expect(main(["pairwise", "--percent", "lunch.txt"], io)).toBe(1);
+  expect(calls.outTexts).toEqual([LUNCH_PERCENT]);
+  expect(calls.errTexts).toEqual([]);
+});
+
+test("pairwise --margins --percent prints signed margins as percentages", () => {
+  const { io, calls } = fakeIo(LUNCH);
+
+  expect(main(["pairwise", "--margins", "--percent", "lunch.txt"], io)).toBe(1);
+  expect(calls.outTexts).toEqual([LUNCH_MARGIN_PERCENT]);
+  expect(calls.errTexts).toEqual([]);
+});
+
+test("pairwise percentages round half up to one decimal", () => {
+  const counts = fakeIo("candidates A B\n1: A > B\n15: B > A\n");
+
+  expect(main(["pairwise", "--percent", "votes.txt"], counts.io)).toBe(0);
+  expect(counts.calls.outTexts).toEqual([
+    "vs     A    B\n" +
+      "A      .  6.3\n" +
+      "B   93.8    .\n" +
+      "\n" +
+      "condorcet winner: B\n" +
+      "condorcet loser: A\n",
+  ]);
+
+  const margins = fakeIo("candidates A B\n1: A > B\n15: B > A\n");
+
+  expect(main(["pairwise", "--margins", "--percent", "votes.txt"], margins.io)).toBe(0);
+  expect(margins.calls.outTexts).toEqual([
+    "vs     A      B\n" +
+      "A      .  -87.5\n" +
+      "B   87.5      .\n" +
+      "\n" +
+      "condorcet winner: B\n" +
+      "condorcet loser: A\n",
+  ]);
+});
+
+test("a margin percentage that rounds to 0.0 has no minus sign", () => {
+  const { io, calls } = fakeIo("candidates A B\n1501: A > B\n1500: B > A\n");
+
+  expect(main(["pairwise", "--margins", "--percent", "votes.txt"], io)).toBe(0);
+  expect(calls.outTexts).toEqual([
+    "vs    A    B\n" +
+      "A     .  0.0\n" +
+      "B   0.0    .\n" +
+      "\n" +
+      "condorcet winner: A\n" +
+      "condorcet loser: B\n",
+  ]);
+});
+
+test("blank ballots count in the total of --percent", () => {
+  const { io, calls } = fakeIo("candidates A B\n3: A > B\n1:\n");
+
+  expect(main(["pairwise", "--percent", "votes.txt"], io)).toBe(0);
+  expect(calls.outTexts).toEqual([
+    "vs    A     B\n" +
+      "A     .  75.0\n" +
+      "B   0.0     .\n" +
+      "\n" +
+      "condorcet winner: A\n" +
+      "condorcet loser: B\n",
+  ]);
+});
+
+test("pairwise accepts --percent and --margins in any order, repeated, after the file", () => {
+  const { io, calls } = fakeIo(LUNCH);
+
+  expect(main(["pairwise", "--percent", "lunch.txt", "--margins", "--percent"], io)).toBe(1);
+  expect(calls.outTexts).toEqual([LUNCH_MARGIN_PERCENT]);
+  expect(calls.errTexts).toEqual([]);
+});
+
+test("--percent is a flag of pairwise only", () => {
+  const withValue = fakeIo(LUNCH);
+
+  expect(main(["pairwise", "--percent=1", "lunch.txt"], withValue.io)).toBe(2);
+  expect(withValue.calls.outTexts).toEqual([]);
+  expect(withValue.calls.errTexts).toEqual(['ranktally: unknown option "--percent=1"\n']);
+  expect(withValue.calls.filePaths).toEqual([]);
+
+  const tally = fakeIo(LUNCH);
+
+  expect(main(["tally", "--percent", "plurality", "lunch.txt"], tally.io)).toBe(2);
+  expect(tally.calls.outTexts).toEqual([]);
+  expect(tally.calls.errTexts).toEqual(['ranktally: unknown option "--percent"\n']);
+  expect(tally.calls.filePaths).toEqual([]);
+});

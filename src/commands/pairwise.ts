@@ -1,11 +1,14 @@
-import { VoteError } from "../core/ballots";
+import { totalBallots, VoteError } from "../core/ballots";
 import { condorcetLoser, condorcetWinner, duels } from "../core/duels";
 import { parseOptions } from "../core/options";
-import { renderTable } from "../core/text";
+import { fixed1, renderTable } from "../core/text";
 import { type Io, loadElection } from "../formats/files";
 
 export function run(argv: string[], io: Io): number {
-  const parsed = parseOptions(argv, [{ name: "--margins", kind: "flag" }]);
+  const parsed = parseOptions(argv, [
+    { name: "--margins", kind: "flag" },
+    { name: "--percent", kind: "flag" },
+  ]);
 
   if (parsed.args.length === 0) {
     throw new VoteError("missing FILE");
@@ -18,6 +21,8 @@ export function run(argv: string[], io: Io): number {
   const election = loadElection(io, parsed.args[0]);
   const counts = duels(election);
   const margins = parsed.values["--margins"] === true;
+  const percent = parsed.values["--percent"] === true;
+  const total = totalBallots(election);
   const rows = election.candidates.map((candidate, candidateIndex) => [
     candidate,
     ...election.candidates.map((_, otherIndex) => {
@@ -28,7 +33,8 @@ export function run(argv: string[], io: Io): number {
       const value = margins
         ? counts[candidateIndex][otherIndex] - counts[otherIndex][candidateIndex]
         : counts[candidateIndex][otherIndex];
-      return value < 0 ? `-${String(-value)}` : String(value);
+      const magnitude = percent ? fixed1(100 * Math.abs(value), total) : String(Math.abs(value));
+      return value < 0 && magnitude !== "0.0" ? `-${magnitude}` : magnitude;
     }),
   ]);
   const right = new Set(election.candidates.map((_, index) => index + 1));

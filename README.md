@@ -62,7 +62,7 @@ rank  candidate  wins  losses
 
 `compare FILE` runs all five methods for one seat and shows their winners side by side.
 
-`pairwise [--margins] FILE` prints every head-to-head count and identifies the Condorcet winner and loser, if they exist. `--margins` prints the difference between each pair instead of the count.
+`pairwise [--margins] FILE` prints every head-to-head count and identifies the Condorcet winner and loser, if they exist. `--margins` prints the difference between each pair instead of the count. `--percent` prints each number (or each margin, with `--margins`) as a percentage of all ballots, with one decimal and half up rounding, for example `36.2` or `-25.5`.
 
 ## Methods
 
