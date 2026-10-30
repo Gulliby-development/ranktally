@@ -12,7 +12,7 @@ import { run as stvRun } from "./methods/stv";
 
 export const USAGE = [
   "usage: ranktally tally [--seats N] [--winner-only] METHOD FILE",
-  "       ranktally compare FILE",
+  "       ranktally compare [--only METHODS] FILE",
   "       ranktally pairwise [--margins] FILE",
 ].join("\n");
 

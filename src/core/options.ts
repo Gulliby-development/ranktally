@@ -3,19 +3,19 @@ import { show } from "./text";
 
 export interface OptionSpec {
   name: string;
-  kind: "flag" | "int";
+  kind: "flag" | "int" | "text";
   default?: number | boolean;
   lo?: number;
   hi?: number;
 }
 
 export interface Parsed {
-  values: Record<string, number | boolean>;
+  values: Record<string, number | boolean | string>;
   args: string[];
 }
 
 export function parseOptions(argv: string[], specs: OptionSpec[]): Parsed {
-  const values = new Map<string, number | boolean>();
+  const values = new Map<string, number | boolean | string>();
   const rawIntegers = new Map<string, string>();
   const args: string[] = [];
 
@@ -57,6 +57,11 @@ export function parseOptions(argv: string[], specs: OptionSpec[]): Parsed {
   }
 
   for (const spec of specs) {
+    if (spec.kind === "text" && rawIntegers.has(spec.name)) {
+      values.set(spec.name, rawIntegers.get(spec.name) ?? "");
+      continue;
+    }
+
     if (spec.kind !== "int" || !rawIntegers.has(spec.name)) {
       continue;
     }
@@ -77,7 +82,7 @@ export function parseOptions(argv: string[], specs: OptionSpec[]): Parsed {
     values.set(spec.name, parsed);
   }
 
-  const result: Record<string, number | boolean> = {};
+  const result: Record<string, number | boolean | string> = {};
 
   for (const spec of specs) {
     if (values.has(spec.name)) {
@@ -89,7 +94,7 @@ export function parseOptions(argv: string[], specs: OptionSpec[]): Parsed {
       result[spec.name] = spec.default;
     } else if (spec.kind === "flag") {
       result[spec.name] = false;
-    } else {
+    } else if (spec.kind === "int") {
       result[spec.name] = 0;
     }
   }

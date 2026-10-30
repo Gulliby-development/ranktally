@@ -7,7 +7,7 @@ import type { Io } from "../src/formats/files";
 const REPOSITORY_ROOT = resolve(import.meta.dir, "..");
 const EXPECTED_USAGE = [
   "usage: ranktally tally [--seats N] [--winner-only] METHOD FILE",
-  "       ranktally compare FILE",
+  "       ranktally compare [--only METHODS] FILE",
   "       ranktally pairwise [--margins] FILE",
   "",
 ].join("\n");

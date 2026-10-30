@@ -99,7 +99,7 @@ test("the command run signatures and exact usage contract are public", () => {
   expect(contracts).toEqual([true, true, true, true, true]);
   expect(USAGE).toBe(
     "usage: ranktally tally [--seats N] [--winner-only] METHOD FILE\n" +
-      "       ranktally compare FILE\n" +
+      "       ranktally compare [--only METHODS] FILE\n" +
       "       ranktally pairwise [--margins] FILE",
   );
 });
