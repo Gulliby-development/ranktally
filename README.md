@@ -16,11 +16,11 @@ The command synopsis is:
 
 ~~~text
 usage: ranktally tally [--seats N] [--winner-only] METHOD FILE
-       ranktally compare FILE
+       ranktally compare [--only METHODS] FILE
        ranktally pairwise [--margins] FILE
 ~~~
 
-FILE is a path to an election file or `-` to read standard input. `--help` by itself prints the synopsis; elsewhere it is treated as an unknown command or option. `--seats N` accepts 1 through 11, defaults to 1, and applies only to STV; for STV, N must also be less than the number of candidates. `--winner-only` prints just the tally result, while `--margins` shows signed pairwise margins instead of raw counts.
+FILE is a path to an election file or `-` to read standard input. `--help` by itself prints the synopsis; elsewhere it is treated as an unknown command or option. `--seats N` accepts 1 through 11, defaults to 1, and applies only to STV; for STV, N must also be less than the number of candidates. `--winner-only` prints just the tally result, while `--margins` shows signed pairwise margins instead of raw counts. `--only METHODS` limits `compare` to some of the five methods.
 
 In an election file, a `#` at the start of a line or after a space or tab begins a comment that runs to the end of the line; this works on the `candidates` line and on ballot lines, and a `#` glued to a name or to a colon is part of the text.
 
@@ -60,7 +60,9 @@ rank  candidate  wins  losses
 
 `tally [--seats N] [--winner-only] METHOD FILE` counts with one method and prints its result and table. `--winner-only` omits the method details and table; `--seats` sets the STV seat count.
 
-`compare FILE` runs all five methods for one seat and shows their winners side by side.
+`compare [--only METHODS] FILE` runs all five methods for one seat and shows their winners side by side.
+
+`--only` takes method names separated by commas, for example `--only schulze,borda` (also `--only=schulze,borda`). Only those methods run and appear in the table, in the usual order whatever order or repetition the list has; the exit code is decided among them alone. An empty list or an empty name is `invalid --only` and an unknown name is `unknown method`, both exit code `2`; given more than once, the last `--only` wins.
 
 `pairwise [--margins] FILE` prints every head-to-head count and identifies the Condorcet winner and loser, if they exist. `--margins` prints the difference between each pair instead of the count. `--percent` prints each number (or each margin, with `--margins`) as a percentage of all ballots, with one decimal and half up rounding, for example `36.2` or `-25.5`.
 
